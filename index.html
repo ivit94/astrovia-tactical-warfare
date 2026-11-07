@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Astrovia — Commander Creator</title>
+<style>
+:root{
+  --bg:#0a0f17;--panel:#111a27;--panel2:#172335;--line:#2a3b50;
+  --text:#edf3fb;--muted:#9aabc0;--accent:#74b7ff;--accent2:#b5d9ff;
+  --good:#8bd6b0;--warn:#f1c77c;--shadow:0 18px 50px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 15% 0%,#17283d 0,transparent 42%),var(--bg);color:var(--text);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.shell{max-width:1240px;margin:auto;padding:28px 22px 54px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:13px}
+.mark{width:44px;height:44px;border:1px solid #45617e;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,#213d5a,#101b2b);font-weight:900;color:var(--accent2);letter-spacing:-2px}
+.eyebrow{font-size:11px;letter-spacing:.19em;text-transform:uppercase;color:var(--accent);font-weight:800}
+h1{font-size:clamp(25px,4vw,38px);letter-spacing:-.035em;margin:2px 0 0}
+.top-note{color:var(--muted);font-size:13px;text-align:right}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
+.sidebar,.main,.preview{background:rgba(17,26,39,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.sidebar{padding:16px;position:sticky;top:18px}
+.step{display:flex;align-items:center;gap:11px;padding:11px 10px;border-radius:11px;color:var(--muted);margin:3px 0}
+.step .num{width:27px;height:27px;border:1px solid #40536b;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800}
+.step.active{background:#20364f;color:var(--text)}
+.step.active .num{background:var(--accent);border-color:var(--accent);color:#081421}
+.step.done .num{border-color:var(--good);color:var(--good)}
+.side-note{border-top:1px solid var(--line);margin-top:16px;padding:15px 8px 4px;color:var(--muted);font-size:12px}
+.main{padding:clamp(18px,3vw,30px);min-height:690px}
+.section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:24px}
+h2{font-size:24px;margin:0 0 5px;letter-spacing:-.025em}
+.sub{color:var(--muted);margin:0;max-width:720px}
+.pill{border:1px solid #38506b;border-radius:99px;padding:5px 10px;color:var(--accent2);font-size:11px;white-space:nowrap}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field.full{grid-column:1/-1}
+label{font-size:12px;color:#c2d0e0;font-weight:700;letter-spacing:.03em}
+input,select,textarea{width:100%;background:#0b1420;color:var(--text);border:1px solid #30445c;border-radius:10px;padding:11px 12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #74b7ff20}
+textarea{min-height:96px;resize:vertical}
+.hint{font-size:11px;color:var(--muted)}
+.species-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.species-group{background:#0c1521;border:1px solid var(--line);border-radius:13px;padding:15px}
+.species-group h3{font-size:14px;margin:0 0 10px}
+.species-group select{margin-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat{background:#0c1521;border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat label{display:block;margin-bottom:8px}
+.stat select{padding:9px}
+.mod{font-size:12px;color:var(--accent2);margin-top:6px}
+.method{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}
+.toggle{background:#0b1420;border:1px solid var(--line);color:var(--muted);padding:8px 12px;border-radius:9px}
+.toggle.active{background:#20364f;color:var(--text);border-color:#52769b}
+.spec-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.race-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.race-card{border:1px solid var(--line);background:#0c1521;border-radius:13px;padding:13px;text-align:left;color:var(--text);transition:.15s;min-height:120px}
+.race-card:hover{border-color:#6487ad;transform:translateY(-1px)}
+.race-card.selected{border-color:var(--accent);background:#172b40;box-shadow:inset 0 0 0 1px #74b7ff55}
+.race-card h3{margin:0 0 6px;font-size:14px}
+.race-card p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}
+.race-card .bonus{font-size:11px;margin-top:7px}
+.spec-card{border:1px solid var(--line);background:#0c1521;border-radius:13px;padding:15px;text-align:left;color:var(--text);transition:.15s;min-height:145px}
+.spec-card:hover{border-color:#6487ad;transform:translateY(-1px)}
+.spec-card.selected{border-color:var(--accent);background:#172b40;box-shadow:inset 0 0 0 1px #74b7ff55}
+.spec-card h3{margin:0 0 5px;font-size:15px}
+.spec-card p{margin:0;color:var(--muted);font-size:12px}
+.bonus{display:block;color:var(--good);font-size:12px;font-weight:700;margin-top:10px}
+.counter{font-size:12px;color:var(--muted);padding-top:9px}
+.weapon-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.weapon-details{font-size:11px;color:var(--muted);line-height:1.5;margin:0;padding:9px 11px;background:#0b1420;border:1px solid var(--line);border-radius:9px;min-height:42px}
+.upload{border:1px dashed #526b86;background:#0c1521;border-radius:13px;padding:15px;display:flex;gap:15px;align-items:center}
+.avatar{width:76px;height:76px;border-radius:12px;background:#1a2b40;border:1px solid #405875;display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:11px;text-align:center;flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
+.btn{border:1px solid #3a536e;border-radius:10px;padding:10px 16px;background:#17283b;color:var(--text);font-weight:700}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#071421}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.preview{padding:19px;position:sticky;top:18px}
+.preview h3{margin:0 0 13px;font-size:15px}
+.preview-name{font-size:20px;font-weight:800;margin-bottom:2px}
+.preview-meta{font-size:12px;color:var(--muted)}
+.preview-block{border-top:1px solid var(--line);padding:13px 0}
+.preview-block strong{display:block;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px}
+.preview-line{font-size:13px;color:#d6e1ee;margin:3px 0}
+.preview-empty{font-size:12px;color:var(--muted)}
+
+.army-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.army-stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px}
+.army-stat span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.1em}
+.army-stat strong{display:block;font-size:23px;margin-top:5px;font-variant-numeric:tabular-nums}
+.army-builder{display:grid;gap:12px}
+.army-category{background:rgba(23,35,53,.72);border:1px solid var(--line);border-radius:13px;padding:16px}
+.army-category-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:13px}
+.army-category h3{margin:0;font-size:17px}
+.army-category p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.army-type{color:var(--accent2);font-size:11px;text-align:right}
+.army-subtype-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.army-count{display:grid;grid-template-columns:1fr 105px;gap:5px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.army-count span{font-weight:700}
+.army-count input{width:100%;min-width:0;background:#0b1420;color:var(--text);border:1px solid #40536b;border-radius:8px;padding:9px}
+.army-count small{grid-column:1 / -1;color:var(--muted);font-size:11px}
+.army-validation-error{border-color:#a85c5c!important;color:#ffd1d1}
+.army-force-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+.army-force-card{min-height:150px;text-align:left;padding:20px;border:1px solid var(--line);border-radius:14px;background:rgba(23,35,53,.72);color:var(--text);cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
+.army-force-card:hover{border-color:#7899bd;transform:translateY(-2px)}
+.army-force-card.selected{border-color:var(--accent);background:#172b40;box-shadow:inset 0 0 0 1px #74b7ff55}
+.army-force-card h3{margin:0 0 9px;font-size:19px}
+.army-force-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.army-force-buffs{margin-top:13px;padding-top:11px;border-top:1px solid var(--line);font-size:12px;line-height:1.7;color:#d5e2f0}
+.feat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.feat-card{background:#0c1521;border:1px solid var(--line);border-radius:13px;padding:15px;display:flex;flex-direction:column;gap:10px}
+.feat-card.owned{border-color:#568d76;background:#10231f}
+.feat-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.feat-card h3{font-size:14px;margin:0}
+.feat-cost{font-size:11px;color:var(--accent2);white-space:nowrap;font-weight:800}
+.feat-description{font-size:12px;color:#c3d2e2;line-height:1.55;margin:0;flex:1}
+.feat-category{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.feat-buy{align-self:flex-start;border:1px solid #46627f;background:#17283b;color:var(--text);border-radius:8px;padding:7px 12px;font-size:11px;font-weight:800}
+.feat-card.owned .feat-buy{border-color:#568d76;background:#173b30;color:#c9f6df}
+@media(max-width:760px){.feat-grid{grid-template-columns:1fr}}
+
+.army-force-buffs b{display:block;margin-bottom:3px;color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+
+@media(max-width:760px){.army-force-grid{grid-template-columns:1fr}}
+
+@media(max-width:760px){.army-summary-grid{grid-template-columns:1fr}.army-subtype-grid{grid-template-columns:1fr}.army-category-head{display:block}.army-type{text-align:left;display:block;margin-top:6px}}
+.review-sheet{display:grid;gap:14px}
+.review-header{padding:18px;background:linear-gradient(135deg,#1c3650,#142131);border:1px solid #38516b;border-radius:13px}
+.review-header h3{margin:0 0 5px;font-size:21px}
+.review-header p{margin:0;color:var(--muted);font-size:12px}
+.review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.review-section{padding:14px;background:#0b1420;border:1px solid var(--line);border-radius:11px;min-width:0}
+.review-section h4{margin:0 0 10px;color:var(--accent);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.review-item{font-size:12px;line-height:1.55;margin:5px 0;overflow-wrap:anywhere}
+.review-item b{color:#e8f0f8}
+.review-full{grid-column:1/-1}
+@media(max-width:680px){.review-grid{grid-template-columns:1fr}.review-full{grid-column:auto}}
+.buff{font-size:12px;color:var(--good);margin:5px 0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#193a32;border:1px solid #3b806b;color:#d8ffed;padding:10px 16px;border-radius:10px;display:none;z-index:5}
+.hidden{display:none!important}
+.notice{padding:12px 14px;background:#17283a;border:1px solid #344d68;border-radius:11px;color:#c6d9ed;font-size:12px;margin:16px 0}
+@media(max-width:960px){.layout{grid-template-columns:210px minmax(0,1fr)}.preview{grid-column:2;position:static}.sidebar{grid-row:span 2}}
+@media(max-width:680px){.shell{padding:18px 12px}.top{align-items:flex-start}.top-note{display:none}.layout{display:flex;flex-direction:column}.sidebar,.main,.preview{width:100%;position:static}.sidebar{padding:10px;display:grid;grid-template-columns:repeat(2,1fr)}.side-note{grid-column:1/-1}.main{min-height:0}.form-grid,.species-groups,.spec-grid,.race-grid,.weapon-row{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.section-head{display:block}.pill{display:inline-block;margin-top:12px}}
+
+/* Cleaner creator layout: hide nonessential helper notes, retain functional panels. */
+.top-note,.side-note,p.hint{display:none!important}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div class="brand"><div class="mark">A</div><div><div class="eyebrow">Astrovia Tactical Warfare</div><h1>Commander Creator</h1></div></div>
+    <div class="top-note">D20 combat system · D&D 5e (2014) foundation<br>Commander rules · Prototype interface</div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="step active" data-step="0"><span class="num">1</span><span>Identity &amp; Background</span></div>
+      <div class="step" data-step="1"><span class="num">2</span><span>Attributes</span></div>
+      <div class="step" data-step="2"><span class="num">3</span><span>Specializations</span></div>
+      <div class="step" data-step="3"><span class="num">4</span><span>Equipment</span></div>
+      <div class="step" data-step="4"><span class="num">5</span><span>Feats</span></div>
+      <div class="step" data-step="5"><span class="num">6</span><span>Army Customization</span></div>
+      <div class="step" data-step="6"><span class="num">7</span><span>Review</span></div>
+      <div class="side-note">Commanders are individual characters who fight personally and provide army buffs. They do not use D&D classes and do not represent or manage a squad.</div>
+    </aside>
+
+    <main class="main">
+      <section class="page" data-page="0">
+        <div class="section-head"><div><h2>Commander identity</h2><p class="sub">Create the commander's identity, race, birthplace, background, and military service.</p></div><span class="pill">STEP 01 / 07</span></div>
+        <div class="form-grid">
+          <div class="field"><label for="name">CHARACTER NAME *</label><input id="name" placeholder="Enter commander name" maxlength="50"></div>
+          <div class="field"><label for="callsign">CALLSIGN / TITLE</label><input id="callsign" placeholder="Optional callsign or title" maxlength="40"></div>
+          <div class="field"><label for="gender">GENDER</label><select id="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option><option>Prefer not to say</option></select></div>
+          <div class="field full"><label>RACE / SPECIES</label><p class="hint">Choose one race for your commander. Select a card to view its benefits.</p><div class="race-grid" id="raceGrid"></div><select id="species-choice" class="hidden" aria-hidden="true"><option value="">Choose race / species</option></select></div>
+          <div class="field full hidden" id="customSpeciesField"><label for="species-custom">CUSTOM ASTROVIA SPECIES</label><input id="species-custom" placeholder="Enter custom species name"><p class="hint">Enter one custom species if it is not in the catalogue.</p></div>
+          <div class="field full"><div class="notice" id="speciesBuffPanel"><b>Race benefit</b><br>Select a race to view its personal bonus.</div></div>
+
+          <div class="field"><label for="age">AGE</label><input id="age" type="number" min="1" max="10000" placeholder="Age"></div>
+          <div class="field"><label for="birthplace">PLANET OF ORIGIN</label><select id="birthplace"><option value="">Select birthplace</option><option value="Cassiopeia Prime">Cassiopeia Prime</option><option value="Solara Prime">Solara Prime</option><option value="Band">Band</option></select><p class="hint">This is the planet where the commander was born. It determines the available planetary PDFs and Marine division options.</p></div>
+          <div class="field"><label for="background">BACKGROUND</label><select id="background" disabled><option value="">Choose a birthplace first</option></select><p class="hint" id="backgroundHint">Available backgrounds depend on the commander's birthplace.</p></div>
+          <div class="field"><label for="faction">MILITARY BRANCH / PDF</label><select id="faction" disabled><option value="">Choose a background first</option></select><p class="hint" id="factionHint">Choose the APU Marines or a planetary defense organization available from your birthplace.</p></div>
+          <div class="field hidden" id="marineDivisionField"><label for="marineDivision">MARINE DIVISION</label><select id="marineDivision" disabled><option value="">Choose a Marine division</option></select><p class="hint" id="marineDivisionHint">Marine divisions are formations within the single Union-wide APU Marines.</p></div>
+          <div class="field full hidden" id="backgroundBonusPanel"></div>
+          <div class="field full"><label for="description">PHYSICAL DESCRIPTION / BIOGRAPHY</label><textarea id="description" placeholder="Describe your commander's appearance, history or personality."></textarea></div>
+          <div class="field full"><label>COMMANDER PORTRAIT</label><div class="upload"><div class="avatar" id="avatar">Portrait<br>preview</div><div><input id="portrait" type="file" accept="image/png,image/jpeg,image/webp"><div class="hint">Optional · PNG, JPG or WebP. Image stays in this browser prototype.</div></div></div></div>
+        </div>
+      </section>
+
+      <section class="page hidden" data-page="1">
+        <div class="section-head"><div><h2>Ability scores</h2><p class="sub">Official rule: every player may choose either Standard Array or dice rolling when creating a commander.</p></div><span class="pill">STEP 02 / 07</span></div>
+        <div class="method"><button class="toggle active" id="standardBtn" type="button">Standard Array</button><button class="toggle" id="rollBtn" type="button">Roll 4d6</button></div>
+        <div class="notice" id="scoreNotice"><b>Both methods are permitted.</b> Choose the method you prefer for this commander. Standard Array uses 15, 14, 13, 12, 10 and 8; rolling uses six rolls of 4d6, dropping the lowest die each time.</div>
+        <div class="roll-tools hidden" id="rollTools"><button class="action" id="rollScoresBtn" type="button">Roll six ability scores</button><span class="hint" id="rollResults">Roll 4d6 six times, discard the lowest die from each roll, then assign the six totals to your abilities in any order. You may roll a new set before assigning scores.</span></div>
+        <div class="stats" id="stats"></div>
+        <div class="notice">Ability scores are for the commander's personal character sheet. They do not automatically replace squad statistics or weapon attack bonuses.</div>
+      </section>
+
+      <section class="page hidden" data-page="2">
+        <div class="section-head"><div><h2>Choose two specializations</h2><p class="sub">Select any two. Mix and match freely; there are no faction, species or rank restrictions.</p></div><span class="pill">STEP 03 / 07</span></div>
+        <div class="spec-grid" id="specGrid"></div>
+        <div class="counter" id="specCounter">0 of 2 selected</div>
+        <div class="notice">These are army-wide or unit-type buffs provided by the commander. They are not D&D classes, subclasses or squad roles. Final ranges, durations and stacking limits will be defined in the battle rules.</div>
+      </section>
+
+      <section class="page hidden" data-page="3">
+        <div class="section-head"><div><h2>Personal equipment</h2><p class="sub">Set up the commander's own weapons and defensive equipment. These belong to the commander, not a squad.</p></div><span class="pill">STEP 04 / 07</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="armor">ARMOR</label><select id="armor">
+            <option value="none">No armor</option>
+            <optgroup label="Light Armor">
+              <option value="padded">Meshweave Undersuit — 5 gold credits</option>
+              <option value="leather">Synthhide Jacket — 10 gold credits</option>
+              <option value="studded">Reinforced Nano-weave — 45 gold credits</option>
+            </optgroup>
+            <optgroup label="Medium Armor">
+              <option value="hide">Composite Flex-Suit — 10 gold credits</option>
+              <option value="chainshirt">Microlattice Armor Vest — 50 gold credits</option>
+              <option value="scalemail">Segmented Carbonfiber Armor — 50 gold credits</option>
+              <option value="breastplate">Plasteel Torso Guard — 400 gold credits</option>
+              <option value="halfplate">Tactical Exo-Frame Harness — 750 gold credits</option>
+            </optgroup>
+            <optgroup label="Heavy Armor">
+              <option value="ringmail">Armored Polymer Shell — 30 gold credits</option>
+              <option value="chainmail">Linksteel Combat Suit — 75 gold credits</option>
+              <option value="splint">Articulated Combat Frame — 200 gold credits</option>
+              <option value="plate">Titan-Class Battle Armor — 1,500 gold credits</option>
+            </optgroup>
+          </select><p class="hint" id="armorDetails">Select armor to view its AC, requirements, stealth properties and description.</p></div>
+          <div class="field"><label for="shield">SHIELD</label><select id="shield"><option value="0">No shield</option><option value="2">Energy Deflector Gauntlet — 10 gold credits (+2 AC)</option></select></div>
+          <div class="field"><label for="personalAC">CALCULATED ARMOR CLASS (AC)</label><input id="personalAC" type="number" min="1" max="40" placeholder="Assign DEX to calculate" readonly></div>
+          <div class="field"><label for="weapon">PRIMARY WEAPON</label><select id="weapon"><option value="">No primary weapon selected</option></select><p class="weapon-details" id="primaryWeaponDetails">Choose a weapon to view its damage, cost, range and properties.</p></div>
+          <div class="field"><label for="secondary">SECONDARY WEAPON</label><select id="secondary"><option value="">No secondary weapon selected</option></select><p class="weapon-details" id="secondaryWeaponDetails">Optional. Choose a second weapon from the catalogue.</p></div>
+          <div class="field"><label for="commanderHP">CALCULATED PERSONAL HIT POINTS (HP)</label><input id="commanderHP" type="number" min="1" max="500" placeholder="Assign CON to calculate" readonly><p class="hint" id="hpDetails">Level 1 HP = 8 + Constitution modifier.</p></div>
+          <div class="field full"><label for="gear">ADDITIONAL EQUIPMENT</label><textarea id="gear" placeholder="Communications gear, field equipment, personal items, etc."></textarea></div>
+        </div>
+
+      </section>
+
+<section class="page hidden" data-page="4">
+        <div class="section-head">
+          <div>
+            <h2>Commander feats</h2>
+            <p class="sub">Purchase universal feats with your shared army treasury. Each feat is a one-time unlock; you can purchase any combination you can afford.</p>
+          </div>
+          <span class="pill">STEP 05 / 07</span>
+        </div>
+        <div class="army-summary-grid">
+          <div class="army-stat"><span>Starting treasury</span><strong>10,000</strong></div>
+          <div class="army-stat"><span>Credits remaining</span><strong id="creditsRemaining">10,000</strong></div>
+          <div class="army-stat"><span>Feats purchased</span><strong id="featsPurchased">0 / 15</strong></div>
+        </div>
+        <div class="notice"><b>Universal feats</b><br>These feats are available across military factions. Feat purchase costs unlock the ability; they do not include additional costs such as purchasing the actual mech unit. Artillery Support and Air Strike Support each have uses equal to your proficiency bonus, up to three uses per battle or deployment.</div>
+        <div class="feat-grid" id="featGrid"></div>
+        <div class="notice" id="featPurchaseNotice">Your commander begins with 10,000 Credits. Select Buy on a feat to unlock it.</div>
+      </section>
+
+<section class="page hidden" data-page="5">
+        <div class="section-head">
+          <div>
+            <h2>Army customization</h2>
+            <p class="sub">Choose the Catenarian Legion force type for the commander's battalion. Each force type has its own army buffs and unit stat sheets.</p>
+          </div>
+          <span class="pill">STEP 06 / 07</span>
+        </div>
+        <div class="notice" id="armyCodexNotice">
+          <b>Army roster</b><br>
+          The Catenarian Legion is the first army roster being configured. Select the Catenarian Legion as the commander's military affiliation to use this roster.
+        </div>
+        <div class="notice">
+          <b>Choose your Catenarian force type</b><br>
+          Select one of the three force structures. Each choice will use its own Catenarian Legion unit stat sheets.
+        </div>
+        <div class="army-force-grid" id="armyForceGrid">
+          <button type="button" class="army-force-card" data-army-type="Regular">
+            <h3>Regular</h3>
+            <p>Catenarian regular infantry formations.</p><div class="army-force-buffs"><b>Army buffs</b><br>+2 to infantry attack rolls<br>+2 to infantry damage rolls</div>
+          </button>
+          <button type="button" class="army-force-card" data-army-type="Armored">
+            <h3>Armored</h3>
+            <p>Catenarian armored formations.</p><div class="army-force-buffs"><b>Army buffs</b><br>+2 AC for armored formations<br>+3 to armored damage rolls</div>
+          </button>
+          <button type="button" class="army-force-card" data-army-type="Mechanized">
+            <h3>Mechanized</h3>
+            <p>A combined force of regular infantry and armored formations.</p><div class="army-force-buffs"><b>Army buffs</b><br>+1 AC for infantry and armored formations<br>+2 to attack rolls for both formation types</div>
+          </button>
+        </div>
+        <div class="notice" id="armySelectionNotice">
+          Choose Regular, Armored, or Mechanized. The corresponding unit stat sheets will be used for building the battalion.
+        </div>
+      </section>
+
+<section class="page hidden" data-page="6">
+        <div class="section-head"><div><h2>Review commander</h2><p class="sub">Review the character before building the commander's battalion.</p></div><span class="pill">STEP 07 / 07</span></div>
+        <div id="review" class="notice">Your commander summary will appear here.</div>
+        <div class="form-grid">
+          <div class="field"><label for="level">COMMANDER LEVEL</label><input id="level" type="number" min="1" max="20" value="1" readonly></div>
+          <div class="field"><label for="experience">EXPERIENCE POINTS (XP)</label><input id="experience" type="number" min="0" value="0" readonly></div>
+          <div class="field"><label>PROFICIENCY BONUS</label><input id="proficiencyBonusDisplay" type="text" value="+2" readonly></div>
+          <div class="field"><label>STARTING ARMY TREASURY</label><input type="text" value="10,000 Credits" readonly></div>
+          <div class="field full"><label>XP PROGRESSION</label><p class="hint" id="progressionDetails">Level 1 · 0 XP · XP is awarded automatically through gameplay.</p></div>
+        </div>
+      </section>
+
+      
+
+      
+
+      
+
+      <div class="notice hidden" id="validationNotice" role="status" aria-live="polite"></div>
+      <div class="actions"><button class="btn" id="back" type="button" disabled>Back</button><div><button class="btn primary" id="next" type="button">Continue</button><button class="btn primary hidden" id="save" type="button">Save &amp; Export JSON</button></div></div>
+    </main>
+
+    <aside class="preview">
+      <h3>Character preview</h3>
+      <div class="preview-name" id="pName">Unnamed Commander</div>
+      <div class="preview-meta" id="pMeta">Species not selected · Birthplace not selected</div>
+      <div class="preview-block"><strong>Ability scores</strong><div id="pStats" class="preview-empty">Not assigned</div></div>
+      <div class="preview-block"><strong>Specializations · 0 / 2</strong><div id="pSpecs" class="preview-empty">Choose two specializations</div></div>
+      <div class="preview-block"><strong>Personal combat</strong><div id="pCombat" class="preview-empty">AC and HP not set</div></div>
+      <div class="preview-block"><strong>Commander role</strong><div class="preview-line">Personal combat + army support</div><div class="preview-line">No D&amp;D class · No individual squad personnel</div></div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const species = {
+  playable:["Dragonborn","Dwarf","Elf","Gnome","Half-Elf","Half-Orc","Halfling","Human","Tiefling"]
+};
+
+/* Initial birthplace/background/affiliation availability.
+   Only the currently established origin paths are selectable here. */
+const backgroundRules = {
+  "Noble":{
+    permanent:"Friendly melee units receive +1 to melee attack rolls.",
+    feature:"House Reinforcements — After a battle, roll 1d100 and multiply the result by 10. Your House supplies that many replacement personnel, up to the battalion's 5,000-person limit.",
+    timing:"After battle"
+  },
+  "Diplomat":{
+    permanent:"Friendly ranged units receive +2 to ranged attack rolls.",
+    feature:"Military Intelligence — Before deployment, roll 1d100. On 01–25, reveal the species and unit types of one enemy formation; 26–50 also reveals its current HP; 51–75 also reveals its AC and attack bonus; 76–100 reveals those details for three enemy formations.",
+    timing:"Before battle"
+  },
+  "Military Veteran":{
+    permanent:"Friendly infantry receive +3 to attack rolls and +4 to damage rolls.",
+    feature:"Infantry Recovery — Between battles, choose one damaged friendly infantry unit and roll 1d100. Restore that many HP, up to the unit's maximum HP.",
+    timing:"Between battles"
+  },
+  "Engineer":{
+    permanent:"Friendly armored units receive +2 AC and 6 temporary HP.",
+    feature:"Armored Vehicle Repairs — After a battle, choose one damaged friendly armored unit and roll 1d100. Restore that many HP, up to the unit's maximum HP.",
+    timing:"After battle"
+  },
+  "Mercenary":{
+    permanent:"Friendly units receive +7 to damage rolls.",
+    feature:"Contract Payment — After a battle, roll 1d100 and multiply the result by 100. Add that many Credits to your army treasury.",
+    timing:"After battle"
+  },
+  "Industrialist":{
+    permanent:"Friendly units receive 8 temporary HP.",
+    feature:"Emergency Production — Before battle, roll 1d100. Distribute that many temporary HP among friendly units; no unit can receive more than 100 temporary HP. Unused temporary HP disappears when the battle ends.",
+    timing:"Before battle"
+  }
+};
+const marineDivisionsByOrigin = {
+  "Cassiopeia Prime": [
+    "1st Solara Marines — The First Ones",
+    "2nd Band Marines",
+    "15th Special Forces Division — Phantoms"
+  ],
+  "Solara Prime": ["1st Solara Marines — The First Ones"],
+  "Band": ["Band Marines"]
+};
+const originPaths = {
+  "Cassiopeia Prime":{
+    backgrounds:["Noble","Military Veteran"],
+    affiliations:{
+      "Noble":["APU Marines","Cassiopeia Prime PDFs — To Be Determined"],
+      "Military Veteran":["APU Marines","Cassiopeia Prime PDFs — To Be Determined"]
+    }
+  },
+  "Solara Prime":{
+    backgrounds:["Diplomat","Military Veteran","Engineer","Mercenary","Industrialist"],
+    affiliations:{
+      "Diplomat":["Catenarian Legion (PDF)"],
+      "Military Veteran":["Catenarian Legion (PDF)"],
+      "Engineer":["Catenarian Legion (PDF)"],
+      "Mercenary":["Catenarian Legion (PDF)"],
+      "Industrialist":["Catenarian Legion (PDF)"]
+    }
+  },
+  "Band":{
+    backgrounds:["Noble","Diplomat","Military Veteran","Engineer","Mercenary","Industrialist"],
+    affiliations:{
+      "Noble":["Varkesh Rangers (PDF)","The Darshek (PDF)","Cascadian Desert Rifles (PDF)"],
+      "Diplomat":["Varkesh Rangers (PDF)","The Darshek (PDF)","Cascadian Desert Rifles (PDF)"],
+      "Military Veteran":["Varkesh Rangers (PDF)","The Darshek (PDF)","Cascadian Desert Rifles (PDF)"],
+      "Engineer":["Varkesh Rangers (PDF)","The Darshek (PDF)","Cascadian Desert Rifles (PDF)"],
+      "Mercenary":["Varkesh Rangers (PDF)","The Darshek (PDF)","Cascadian Desert Rifles (PDF)"],
+      "Industrialist":["Varkesh Rangers (PDF)","The Darshek (PDF)","Cascadian Desert Rifles (PDF)"]
+    }
+  }
+};
+function fillSelect(select, placeholder, values){
+ const el=$(select);
+ el.innerHTML=`<option value="">${placeholder}</option>`+values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+}
+function updateOriginOptions(){
+ const origin=$("birthplace").value;
+ const bg=$("background").value;
+ const previousFaction=$("faction").value;
+ if(!origin || !originPaths[origin]){
+  $("background").disabled=true;
+  $("background").innerHTML='<option value="">Choose a birthplace first</option>';
+  $("faction").disabled=true;
+  $("faction").innerHTML='<option value="">Choose a background first</option>';
+  $("backgroundHint").textContent="Available backgrounds depend on the commander's birthplace.";
+  $("factionHint").textContent="Available military organizations depend on birthplace and background.";
+  $("backgroundBonusPanel").classList.add("hidden");
+  return;
+ }
+ const allowedBackgrounds=originPaths[origin].backgrounds;
+ const keepBg=allowedBackgrounds.includes(bg)?bg:"";
+ fillSelect("background","Select background",allowedBackgrounds);
+ $("background").disabled=false;
+ $("background").value=keepBg;
+ updateBackgroundOptions(previousFaction);
+}
+function updateBackgroundOptions(previousFaction=""){
+ const origin=$("birthplace").value;
+ const background=$("background").value;
+ if(!origin || !background){
+  $("faction").disabled=true;
+  $("faction").innerHTML='<option value="">Choose a background first</option>';
+  $("backgroundBonusPanel").classList.add("hidden");
+  $("factionHint").textContent="Available military organizations depend on birthplace and background.";
+  return;
+ }
+ const rule=backgroundRules[background];
+ const affiliations=originPaths[origin]?.affiliations?.[background]||[];
+ fillSelect("faction","Select military branch or PDF",affiliations);
+ $("faction").disabled=false;
+ if(affiliations.includes(previousFaction)) $("faction").value=previousFaction;
+ $("factionHint").textContent=affiliations.length
+  ? "APU Marines is one Union-wide branch. PDFs are planetary organizations."
+  : "No military organizations have been assigned to this background yet.";
+ updateMarineDivisionOptions();
+ if(rule){
+  $("backgroundBonusPanel").classList.remove("hidden");
+  $("backgroundBonusPanel").innerHTML=`<div class="notice"><b>${escapeHtml(background)} — Permanent army bonus</b><br>${escapeHtml(rule.permanent)}<br><br><b>${escapeHtml(rule.timing)} feature</b><br>${escapeHtml(rule.feature)}</div>`;
+ }else{
+  $("backgroundBonusPanel").classList.add("hidden");
+ }
+ updatePreview();
+}
+function updateMarineDivisionOptions(){
+ const isMarines=$("faction").value==="APU Marines";
+ const field=$("marineDivisionField");
+ const select=$("marineDivision");
+ const origin=$("birthplace").value;
+ if(!isMarines){
+  field.classList.add("hidden");
+  select.disabled=true;
+  select.innerHTML='<option value="">Choose a Marine division</option>';
+  select.value="";
+  return;
+ }
+ const previous=select.value;
+ const divisions=marineDivisionsByOrigin[origin]||[];
+ fillSelect("marineDivision","Select Marine division",divisions);
+ select.disabled=false;
+ if(divisions.includes(previous)) select.value=previous;
+ field.classList.remove("hidden");
+ $("marineDivisionHint").textContent=origin==="Cassiopeia Prime"
+  ? "Choose from the established Marine divisions. All are formations of the single APU Marines."
+  : "The Marine division stationed on this world is shown here. It remains part of the Union-wide APU Marines.";
+}
+const speciesBuffs = {
+  "Dragonborn":{
+    army:"Friendly infantry units receive +1 to damage rolls.",
+    personal:"The commander receives +1 to attack rolls and +1 to damage rolls."
+  },
+  "Dwarf":{
+    army:"Friendly infantry units receive +1 AC.",
+    personal:"The commander receives +1 AC and +1 to melee attack rolls and damage rolls."
+  },
+  "Elf":{
+    army:"Friendly ranged units receive +1 to attack rolls.",
+    personal:"The commander receives +1 to ranged weapon attack rolls and spell attack rolls."
+  },
+  "Gnome":{
+    army:"Friendly spellcasting units receive +1 to spell damage rolls.",
+    personal:"The commander receives +1 to spell attack rolls and +1 to spell damage rolls."
+  },
+  "Half-Elf":{
+    army:"Friendly infantry units receive +1 to attack rolls.",
+    personal:"The commander receives +1 to attack rolls and advantage on attack rolls."
+  },
+  "Half-Orc":{
+    army:"Friendly melee units receive +1 to damage rolls.",
+    personal:"The commander receives +1 to melee attack rolls and +2 to melee damage rolls."
+  },
+  "Halfling":{
+    army:"Friendly infantry units receive +1 to initiative rolls.",
+    personal:"The commander receives +1 AC and +1 to initiative rolls."
+  },
+  "Human":{
+    army:"All friendly units receive +1 to attack rolls.",
+    personal:"The commander receives +2 to attack rolls."
+  },
+  "Tiefling":{
+    army:"Friendly spellcasting units receive +1 to damage rolls.",
+    personal:"The commander receives +1 AC, +1 to attack rolls and +1 to damage rolls."
+  }
+};
+const specs = [
+ {name:"Infantry Commander",desc:"Specializes in infantry formations and their battlefield effectiveness.",buff:"+1 to infantry attack rolls · +1 infantry AC"},
+ {name:"Armored Commander",desc:"Improves the performance and protection of armored units.",buff:"+1 armored-unit AC · +1 armored-unit attack rolls"},
+ {name:"Artillery Commander",desc:"Improves artillery accuracy and the damage of its fire.",buff:"+1 artillery attack rolls · +1 artillery damage"},
+ {name:"Reconnaissance Commander",desc:"Improves battlefield awareness and the ability to identify threats.",buff:"Doubles friendly units' field of view"},
+ {name:"Tactical Commander",desc:"Coordinates friendly formations for more effective attacks.",buff:"Friendly units gain advantage on attack rolls"},
+ {name:"Defensive Commander",desc:"Improves the protection of friendly formations.",buff:"+2 AC to friendly units"},
+ {name:"Assault Commander",desc:"Increases the damage dealt by friendly attacking formations.",buff:"+2 damage to friendly units"}
+];
+const startingCredits=10000;
+const featCatalogue=[
+ {id:"bunker-construction",name:"Bunker Construction",category:"Battlefield upgrade",cost:500,description:"Your infantry formations receive defensive bunkers, granting them a +1 bonus to AC for the duration of the battle."},
+ {id:"infantry-gun-placements",name:"Infantry Gun Placements",category:"Battlefield upgrade",cost:600,description:"Your infantry formations receive additional gun placements, granting them a +3 bonus to damage rolls for the duration of the battle."},
+ {id:"armored-plating",name:"Armored Plating",category:"Battlefield upgrade",cost:600,description:"Your armored formations receive reinforced armor plating, granting them a +2 bonus to AC for the duration of the battle."},
+ {id:"improved-armored-weapons",name:"Improved Armored Weapons",category:"Battlefield upgrade",cost:800,description:"Your armored formations receive upgraded weapons, granting them a +2 bonus to attack rolls and a +2 bonus to damage rolls for the duration of the battle."},
+ {id:"artillery-support",name:"Artillery Support",category:"Military support",cost:750,description:"As a reaction, you can call an artillery strike against an enemy formation within range, dealing 1d12 damage, with a number of uses equal to your proficiency bonus, up to a maximum of three uses per battle or deployment."},
+ {id:"air-strike-support",name:"Air Strike Support",category:"Military support",cost:1000,description:"As a reaction, you can call an aerial strike against an enemy formation within range, dealing 1d20 damage, with a number of uses equal to your proficiency bonus, up to a maximum of three uses per battle or deployment."},
+ {id:"combat-resupply",name:"Combat Resupply",category:"Military support",cost:400,description:"You can resupply one friendly infantry formation, granting it 1d20 temporary HP."},
+ {id:"field-repairs",name:"Field Repairs",category:"Military support",cost:500,description:"You can repair one friendly armored formation, granting it 1d20 temporary HP."},
+ {id:"airborne-reinforcement",name:"Airborne Reinforcement",category:"Military support",cost:1000,description:"You can call in airborne reinforcements to provide one friendly formation with 100 temporary HP."},
+ {id:"tactical-reconnaissance",name:"Tactical Reconnaissance",category:"Tactical ability",cost:500,description:"During battle, you can identify the species and unit type of an enemy formation within 60 feet."},
+ {id:"rapid-deployment",name:"Rapid Deployment",category:"Tactical ability",cost:500,description:"As a bonus action, you can order a friendly formation to move up to half its movement speed, provoking opportunity attacks as normal."},
+ {id:"defensive-positioning",name:"Defensive Positioning",category:"Tactical ability",cost:600,description:"You can order your friendly formations to establish defensive positions, granting them a +2 bonus to AC for the duration of the battle."},
+ {id:"suppressive-barrage",name:"Suppressive Barrage",category:"Tactical ability",cost:750,description:"When you take the Attack action, you can use a bonus action to make an additional attack against an enemy formation."},
+ {id:"mech-deployment",name:"Mech Deployment",category:"Advanced military support",cost:1500,description:"You can purchase and deploy one mech unit in your army; purchasing the feat unlocks this option, while the mech unit itself requires additional Credits."},
+ {id:"orbital-deployment",name:"Orbital Deployment",category:"Advanced military support",cost:1250,description:"Once per battle, you can request an orbital bombardment against a designated battlefield area, dealing 2d10 damage to every enemy formation within the targeted area."}
+];
+let purchasedFeats=[];
+let pendingFeats=[];
+function creditsSpent(){return featCatalogue.filter(f=>purchasedFeats.includes(f.id)).reduce((sum,f)=>sum+f.cost,0)}
+function pendingCreditsSpent(){return featCatalogue.filter(f=>pendingFeats.includes(f.id)).reduce((sum,f)=>sum+f.cost,0)}
+function creditsRemaining(){return startingCredits-creditsSpent()-pendingCreditsSpent()}
+function renderFeats(){
+ const grid=$("featGrid");
+ if(!grid)return;
+ const featLimit=proficiencyBonus(Number($("level")?.value||1));
+ const selectionCount=purchasedFeats.length+pendingFeats.length;
+ const atFeatLimit=selectionCount>=featLimit;
+ grid.innerHTML=featCatalogue.map(f=>{
+  const owned=purchasedFeats.includes(f.id);
+  const selected=pendingFeats.includes(f.id);
+  const insufficient=!owned&&!selected&&creditsRemaining()<f.cost;
+  const disabled=owned||(!selected&&atFeatLimit)||insufficient;
+  const label=owned?"Purchased":selected?"Selected":atFeatLimit?"Maximum Feats Reached":insufficient?"Insufficient Credits":"Select Feat";
+  return `<article class="feat-card ${owned||selected?"owned":""}">
+   <div class="feat-card-head"><div><div class="feat-category">${escapeHtml(f.category)}</div><h3>${escapeHtml(f.name)}</h3></div><div class="feat-cost">${f.cost.toLocaleString("en-US")} Credits</div></div>
+   <p class="feat-description">${escapeHtml(f.description)}</p>
+   <button type="button" class="feat-buy" data-feat-id="${f.id}" ${disabled?"disabled":""}>${label}</button>
+  </article>`;
+ }).join("");
+ $("creditsRemaining").textContent=creditsRemaining().toLocaleString("en-US");
+ $("featsPurchased").textContent=`${selectionCount} / ${featLimit}`;
+ const purchaseNotice=$("featPurchaseNotice");
+ if(purchaseNotice)purchaseNotice.textContent=`${pendingFeats.length} feat selection(s) awaiting confirmation. Press Continue to finalize purchases.`;
+ grid.querySelectorAll("[data-feat-id]").forEach(button=>button.addEventListener("click",()=>{
+  const feat=featCatalogue.find(f=>f.id===button.dataset.featId);
+  if(!feat||purchasedFeats.includes(feat.id))return;
+  if(pendingFeats.includes(feat.id)){
+   pendingFeats=pendingFeats.filter(id=>id!==feat.id);
+   renderFeats();
+   return;
+  }
+  const currentLimit=proficiencyBonus(Number($("level")?.value||1));
+  if(purchasedFeats.length+pendingFeats.length>=currentLimit){toast("You have reached your feat limit for your current proficiency bonus.");return;}
+  if(creditsRemaining()<feat.cost){toast("Not enough Credits to select this feat.");return;}
+  pendingFeats.push(feat.id);
+  renderFeats();
+ }));
+}
+function finalizeFeatSelections(){
+ if(!pendingFeats.length)return;
+ const featLimit=proficiencyBonus(Number($("level")?.value||1));
+ if(purchasedFeats.length+pendingFeats.length>featLimit){
+  toast("Your selected feats exceed your current proficiency bonus limit.");
+  return false;
+ }
+ const totalCost=pendingCreditsSpent();
+ if(creditsSpent()+totalCost>startingCredits){
+  toast("Your selected feats exceed the available Credits.");
+  return false;
+ }
+ purchasedFeats=purchasedFeats.concat(pendingFeats);
+ pendingFeats=[];
+ renderFeats();
+ return true;
+}
+function proficiencyBonus(level){
+ return level>=17?6:level>=13?5:level>=9?4:level>=5?3:2;
+}
+const abilities=["STR","DEX","CON","INT","WIS","CHA"];
+const standard=[15,14,13,12,10,8];
+let step=0, method="standard", selectedSpecs=[], portraitData="", rolledScores=[];
+const $=id=>document.getElementById(id);
+function fillSpecies(){
+ const sel=$("species-choice"), grid=$("raceGrid");
+ species.playable.forEach(name=>{
+  const o=document.createElement("option");o.value=name;o.textContent=name;sel.appendChild(o);
+  const buff=speciesBuffs[name] || {army:"No army benefit defined.",personal:"No personal benefit defined."};
+  const card=document.createElement("button");
+  card.type="button";
+  card.className="race-card";
+  card.innerHTML=`<h3>${escapeHtml(name)}</h3><p><b>Army:</b> ${escapeHtml(buff.army)}<br><b>Commander:</b> ${escapeHtml(buff.personal)}</p>`;
+  card.addEventListener("click",()=>{
+   sel.value=name;
+   $("customSpeciesField").classList.add("hidden");
+   $("species-custom").value="";
+   renderRaceCards();
+   updatePreview();
+  });
+  grid.appendChild(card);
+ });
+ const custom=document.createElement("option");custom.value="__custom__";custom.textContent="Custom Astrovia species";sel.appendChild(custom);
+ const customCard=document.createElement("button");
+ customCard.type="button";
+ customCard.className="race-card";
+ customCard.innerHTML="<h3>Custom Astrovia Species</h3><p>Enter a custom species name if your campaign permits a species outside the current playable list.</p>";
+ customCard.addEventListener("click",()=>{
+  sel.value="__custom__";
+  $("customSpeciesField").classList.remove("hidden");
+  renderRaceCards();
+  updatePreview();
+ });
+ grid.appendChild(customCard);
+ renderRaceCards();
+}
+function renderRaceCards(){
+ const selected=$("species-choice").value;
+ [...$("raceGrid").children].forEach(card=>{
+  const title=card.querySelector("h3")?.textContent || "";
+  const value=title==="Custom Astrovia Species"?"__custom__":title;
+  card.classList.toggle("selected",value===selected);
+ });
+}
+function selectedSpeciesBuff(){
+ const name=selectedSpecies();
+ return name ? (speciesBuffs[name] || {army:"Not defined.",personal:"Not defined."}) : null;
+}
+function updateSpeciesBuff(){
+ const name=selectedSpecies(), buff=selectedSpeciesBuff();
+ $("speciesBuffPanel").innerHTML=name
+  ? `<b>${escapeHtml(name)} — Species Buff</b><br><b>Army receives:</b> ${escapeHtml(buff.army)}<br><b>Personal receives:</b> ${escapeHtml(buff.personal)}`
+  : "<b>Species buff</b><br>Select a species to view its army and personal bonuses.";
+}
+function renderStats(){
+ const wrap=$("stats");wrap.innerHTML="";
+ abilities.forEach((a,i)=>{
+  const div=document.createElement("div");div.className="stat";
+  const label=document.createElement("label");label.textContent=a;div.appendChild(label);
+  const sel=document.createElement("select");sel.id="score-"+a;
+  const opt=document.createElement("option");opt.value="";opt.textContent="Assign score";sel.appendChild(opt);
+  const values=method==="standard"?standard:rolledScores;
+  values.forEach((v,j)=>{const o=document.createElement("option");o.value=j+":"+v;o.textContent=v;sel.appendChild(o)});
+  sel.addEventListener("change",()=>{enforceUnique(sel);updatePreview()});
+  div.appendChild(sel);
+  const mod=document.createElement("div");mod.className="mod";mod.id="mod-"+a;mod.textContent="Modifier: +0";div.appendChild(mod);wrap.appendChild(div);
+ });
+ updatePreview();
+}
+function enforceUnique(changed){
+ const used=[...document.querySelectorAll("#stats select")].filter(s=>s.value).map(s=>s.value);
+ document.querySelectorAll("#stats select").forEach(sel=>{
+  [...sel.options].forEach(o=>{if(o.value)o.disabled=(o.value!==sel.value&&used.includes(o.value))});
+ });
+}
+function score(a){const el=$("score-"+a);return el&&el.value!==""?Number(el.value.split(":").pop()):null}
+function modifier(v){return v===null?null:Math.floor((v-10)/2)}
+function selectedSpecies(){
+ const choice=$("species-choice").value;
+ if(choice==="__custom__")return $("species-custom").value.trim();
+ return choice||"";
+}
+function renderSpecs(){
+ const grid=$("specGrid");grid.innerHTML="";
+ specs.forEach((s,i)=>{
+  const b=document.createElement("button");b.type="button";b.className="spec-card"+(selectedSpecs.includes(i)?" selected":"");
+  b.innerHTML=`<h3>${s.name}</h3><p>${s.desc}</p><span class="bonus">${s.buff}</span>`;
+  b.addEventListener("click",()=>{
+   if(selectedSpecs.includes(i))selectedSpecs=selectedSpecs.filter(x=>x!==i);
+   else if(selectedSpecs.length<2)selectedSpecs.push(i);
+   else toast("Choose only two specializations.");
+   renderSpecs();updatePreview();
+  });
+  grid.appendChild(b);
+ });
+ $("specCounter").textContent=`${selectedSpecs.length} of 2 selected`;
+}
+
+const weaponCatalogue = [
+ // Martial melee weapons
+ {id:"powered-combat-axe",name:"Powered Combat Axe",group:"Martial Melee",base:"Battleaxe",damage:"1d8 slashing",type:"Melee",cost:"10 gold credits",properties:"Versatile (1d10)"},
+ {id:"gravity-mace",name:"Gravity Mace",group:"Martial Melee",base:"Flail",damage:"1d8 bludgeoning",type:"Melee",cost:"10 gold credits",properties:"—"},
+ {id:"electro-glaive",name:"Electro Glaive",group:"Martial Melee",base:"Glaive",damage:"1d10 slashing",type:"Melee (reach)",cost:"20 gold credits",properties:"Reach, two-handed"},
+ {id:"chain-axe",name:"Chain-Axe",group:"Martial Melee",base:"Greataxe",damage:"1d12 slashing",type:"Melee",cost:"30 gold credits",properties:"Two-handed"},
+ {id:"heavy-vibroblade",name:"Heavy Vibroblade",group:"Martial Melee",base:"Greatsword",damage:"2d6 slashing",type:"Melee",cost:"50 gold credits",properties:"Two-handed"},
+ {id:"magnetic-polearm",name:"Magnetic Polearm",group:"Martial Melee",base:"Halberd",damage:"1d10 slashing",type:"Melee (reach)",cost:"20 gold credits",properties:"Reach, two-handed"},
+ {id:"shock-lance",name:"Shock Lance",group:"Martial Melee",base:"Lance",damage:"1d12 piercing",type:"Melee (mounted)",cost:"10 gold credits",properties:"Reach, disadvantage if not mounted"},
+ {id:"vibroblade",name:"Vibroblade",group:"Martial Melee",base:"Longsword",damage:"1d8 slashing",type:"Melee",cost:"15 gold credits",properties:"Versatile (1d10); lightsaber-style weapon equivalent"},
+ {id:"plasma-maul",name:"Plasma Maul",group:"Martial Melee",base:"Maul",damage:"2d6 bludgeoning",type:"Melee",cost:"10 gold credits",properties:"Two-handed"},
+ {id:"spiked-shock-mace",name:"Spiked Shock Mace",group:"Martial Melee",base:"Morningstar",damage:"1d8 piercing",type:"Melee",cost:"15 gold credits",properties:"—"},
+ {id:"energy-pike",name:"Energy Pike",group:"Martial Melee",base:"Pike",damage:"1d10 piercing",type:"Melee (reach)",cost:"5 gold credits",properties:"Reach, two-handed"},
+ {id:"monofoil-blade",name:"Monofoil Blade",group:"Martial Melee",base:"Rapier",damage:"1d8 piercing",type:"Melee (finesse)",cost:"25 gold credits",properties:"Finesse"},
+ {id:"curved-vibrosword",name:"Curved Vibrosword",group:"Martial Melee",base:"Scimitar",damage:"1d6 slashing",type:"Melee (finesse)",cost:"25 gold credits",properties:"Finesse, light"},
+ {id:"compact-vibroblade",name:"Compact Vibroblade",group:"Martial Melee",base:"Shortsword",damage:"1d6 piercing",type:"Melee (finesse)",cost:"10 gold credits",properties:"Finesse, light"},
+ {id:"electro-trident",name:"Electro-Trident",group:"Martial Melee",base:"Trident",damage:"1d6 piercing",type:"Melee / Thrown",cost:"5 gold credits",properties:"Thrown (20/60), versatile (1d8)"},
+ {id:"power-pickaxe",name:"Power Pickaxe",group:"Martial Melee",base:"War Pick",damage:"1d8 piercing",type:"Melee",cost:"5 gold credits",properties:"—"},
+ {id:"plasma-hammer",name:"Plasma Hammer",group:"Martial Melee",base:"Warhammer",damage:"1d8 bludgeoning",type:"Melee",cost:"15 gold credits",properties:"Versatile (1d10)"},
+ {id:"energy-whip",name:"Energy Whip",group:"Martial Melee",base:"Whip",damage:"1d4 slashing",type:"Melee (finesse)",cost:"2 gold credits",properties:"Reach, finesse"},
+ // Simple melee weapons
+ {id:"shock-baton",name:"Shock Baton",group:"Simple Melee",base:"Club",damage:"1d4 bludgeoning",type:"Melee",cost:"1 silver credit",properties:"Optional stun effect is listed in source notes; effect rules not yet defined"},
+ {id:"vibro-knife",name:"Vibro-Knife / Combat Scalpel",group:"Simple Melee",base:"Dagger",damage:"1d4 piercing",type:"Melee / Thrown",cost:"2 gold credits",properties:"Light, finesse, thrown (20/60)"},
+ {id:"reinforced-riot-baton",name:"Reinforced Riot Baton",group:"Simple Melee",base:"Greatclub",damage:"1d8 bludgeoning",type:"Melee",cost:"2 silver credits",properties:"Two-handed"},
+ {id:"tactical-hatchet",name:"Tactical Hatchet",group:"Simple Melee",base:"Handaxe",damage:"1d6 slashing",type:"Melee / Thrown",cost:"5 gold credits",properties:"Light, thrown (20/60)"},
+ {id:"carbon-spear",name:"Carbon Spear / Electro-Spear",group:"Simple Melee",base:"Javelin",damage:"1d6 piercing",type:"Thrown",cost:"5 silver credits",properties:"Thrown (30/120)"},
+ {id:"gravity-knuckle",name:"Gravity Knuckle / Tool Hammer",group:"Simple Melee",base:"Light Hammer",damage:"1d4 bludgeoning",type:"Melee / Thrown",cost:"2 gold credits",properties:"Light, thrown (20/60)"},
+ {id:"impact-staff",name:"Impact Staff / Alloy Cudgel",group:"Simple Melee",base:"Mace",damage:"1d6 bludgeoning",type:"Melee",cost:"5 gold credits",properties:"—"},
+ {id:"electro-staff",name:"Electro-Staff / Plasma Rod",group:"Simple Melee",base:"Quarterstaff",damage:"1d6 bludgeoning",type:"Melee",cost:"2 silver credits",properties:"Versatile (1d8)"},
+ {id:"mining-blade",name:"Mining Blade / Curved Vibro",group:"Simple Melee",base:"Sickle",damage:"1d4 slashing",type:"Melee",cost:"1 gold credit",properties:"Light"},
+ {id:"shock-spear",name:"Shock-Spear / Collapsible Pike",group:"Simple Melee",base:"Spear",damage:"1d6 piercing",type:"Melee / Thrown",cost:"1 gold credit",properties:"Thrown (20/60), versatile (1d8)"},
+ // Ranged weapons
+ {id:"pulse-rifle",name:"Pulse Rifle",group:"Ranged Weapons",base:"Light Crossbow",damage:"1d8",damageType:"Force or radiant",type:"Ranged",cost:"25 gold credits",properties:"Range 80/320; reload; simple energy cell"},
+ {id:"plasma-rifle",name:"Plasma Rifle",group:"Ranged Weapons",base:"Light Crossbow+",damage:"1d8 + 1d4",damageType:"Fire + heat",type:"Ranged",cost:"350 gold credits",properties:"Range 80/320; reload; overheat on critical failure"},
+ {id:"laser-rifle",name:"Laser Rifle",group:"Ranged Weapons",base:"Light Crossbow",damage:"1d8",damageType:"Radiant",type:"Ranged",cost:"25 gold credits",properties:"Range 80/320; reload; overheat on critical failure"},
+ {id:"kinetic-rifle",name:"Kinetic Rifle",group:"Ranged Weapons",base:"Longbow",damage:"1d8",damageType:"Piercing",type:"Ranged",cost:"50 gold credits",properties:"Can add DEX modifier to damage"},
+ {id:"ion-rifle",name:"Ion Rifle",group:"Ranged Weapons",base:"Light Crossbow",damage:"1d8",damageType:"Lightning",type:"Ranged",cost:"100 gold credits",properties:"On hit: constructs make DC 12 Constitution save or are stunned for 1 turn (source-listed effect; not yet reconciled with game combat rules)"},
+ {id:"sniper-rifle",name:"Sniper Rifle",group:"Ranged Weapons",base:"Heavy Crossbow",damage:"1d10",damageType:"Piercing / force",type:"Ranged",cost:"50 gold credits",properties:"Range 150/600; disadvantage if target is within 30 ft"},
+ {id:"assault-rifle",name:"Assault Rifle",group:"Ranged Weapons",base:"Light Crossbow",damage:"1d10",damageType:"Piercing",type:"Ranged",cost:"50 gold credits",properties:"Range 100/300"},
+ {id:"pulse-carbine",name:"Pulse Carbine",group:"Ranged Weapons",base:"Light Crossbow",damage:"1d8",damageType:"Force",type:"Ranged",cost:"25 gold credits",properties:"Range 80/320; reload; overheat on critical failure"},
+ {id:"energy-pistol",name:"Energy Pistol",group:"Ranged Weapons",base:"Hand Crossbow",damage:"1d6",damageType:"Radiant",type:"Ranged",cost:"75 gold credits",properties:"Light; range 60/120"}
+];
+function weaponDetailsText(w){
+ if(!w)return "No weapon selected.";
+ return `<b>${w.name}</b> · ${w.damage}${w.damageType?" "+w.damageType:""}<br><b>5e equivalent:</b> ${w.base} · <b>Type:</b> ${w.type}<br><b>Cost:</b> ${w.cost} · <b>Properties:</b> ${w.properties}`;
+}
+function populateWeaponSelectors(){
+ ["weapon","secondary"].forEach(id=>{
+  const select=$(id);
+  weaponCatalogue.forEach(w=>{
+   const groupLabel=w.group;
+   let group=Array.from(select.children).find(n=>n.tagName==="OPTGROUP"&&n.label===groupLabel);
+   if(!group){group=document.createElement("optgroup");group.label=groupLabel;select.appendChild(group);}
+   const option=document.createElement("option");
+   option.value=w.id;option.textContent=`${w.name} — ${w.damage} · ${w.cost}`;
+   group.appendChild(option);
+  });
+ });
+}
+function updateWeaponDetails(){
+ const primary=weaponCatalogue.find(w=>w.id===$("weapon").value);
+ const secondary=weaponCatalogue.find(w=>w.id===$("secondary").value);
+ $("primaryWeaponDetails").innerHTML=weaponDetailsText(primary);
+ $("secondaryWeaponDetails").innerHTML=weaponDetailsText(secondary);
+}
+
+const armorRules={
+ none:{base:10,dexCap:null,dnd:"Unarmored",cost:"—",stealth:"Normal",strength:"—",description:"No armor equipped."},
+ padded:{base:11,dexCap:null,dnd:"Padded",cost:"5 gold credits",stealth:"Disadvantage",strength:"—",description:"A skin-tight bodysuit made of ultra-light, impact-resistant synthetic fibers woven with micro-ceramic threading."},
+ leather:{base:11,dexCap:null,dnd:"Leather",cost:"10 gold credits",stealth:"Normal",strength:"—",description:"A matte-black jacket made of synthetic hide with embedded reactive shock-dampeners."},
+ studded:{base:12,dexCap:null,dnd:"Studded Leather",cost:"45 gold credits",stealth:"Normal",strength:"—",description:"A high-tech nanofiber bodysuit with visible alloy nodes at critical points, enhancing durability while remaining flexible."},
+ hide:{base:12,dexCap:2,dnd:"Hide",cost:"10 gold credits",stealth:"Normal",strength:"—",description:"Layered smart-polymer and flexible plates arranged for mobility and minor ballistic protection."},
+ chainshirt:{base:13,dexCap:2,dnd:"Chain Shirt",cost:"50 gold credits",stealth:"Normal",strength:"—",description:"Lightweight micro-engineered alloy lattice capable of dispersing kinetic impacts."},
+ scalemail:{base:14,dexCap:2,dnd:"Scale Mail",cost:"50 gold credits",stealth:"Disadvantage",strength:"—",description:"Overlapping carbonfiber composite plates with modular attachments for tactical loadouts."},
+ breastplate:{base:14,dexCap:2,dnd:"Breastplate",cost:"400 gold credits",stealth:"Normal",strength:"—",description:"Smooth contoured torso plating made from lightweight plasteel alloy with integrated data-HUD modules."},
+ halfplate:{base:15,dexCap:2,dnd:"Half Plate",cost:"750 gold credits",stealth:"Disadvantage",strength:"—",description:"A semi-powered exoskeleton harness supporting reinforced plating for heavy combat."},
+ ringmail:{base:14,dexCap:0,dnd:"Ring Mail",cost:"30 gold credits",stealth:"Disadvantage",strength:"—",description:"An early-generation combat suit of hardened polymer plating, often used by civilian security."},
+ chainmail:{base:16,dexCap:0,dnd:"Chain Mail",cost:"75 gold credits",stealth:"Disadvantage",strength:"STR 13",description:"Woven from high-tensile synthetic metals, offering excellent protection with limited flexibility."},
+ splint:{base:17,dexCap:0,dnd:"Splint",cost:"200 gold credits",stealth:"Disadvantage",strength:"STR 15",description:"Heavy modular exosuit plating with servo-assisted joints for advanced mobility in combat."},
+ plate:{base:18,dexCap:0,dnd:"Plate",cost:"1,500 gold credits",stealth:"Disadvantage",strength:"STR 15",description:"State-of-the-art powered armor offering maximal defense, integrated life-support, and modular weapon ports."}
+};
+function updateArmorDetails(){
+ const a=armorRules[$("armor").value]||armorRules.none;
+ const dex=score("DEX");
+ const dexMod=dex===null?null:modifier(dex);
+ const appliedDex=dexMod===null?null:(a.dexCap===null?dexMod:(a.dexCap===0?0:Math.min(dexMod,a.dexCap)));
+ const dexPart=appliedDex===null?"DEX modifier not assigned":`${appliedDex>=0?"+":""}${appliedDex} DEX`;
+ const armorAC=appliedDex===null?`${a.base} + DEX`:a.base+appliedDex;
+ const shieldBonus=Number($("shield").value||0);
+ const totalAC=appliedDex===null?"—":armorAC+shieldBonus;
+ const acText=appliedDex===null
+  ? (a.dexCap===0?`AC ${a.base}`:`${a.base} + DEX`)
+  : `${a.base} ${appliedDex>=0?"+": "−"} ${Math.abs(appliedDex)} DEX = ${armorAC} AC${shieldBonus?` + ${shieldBonus} shield = ${totalAC} total`:""}`;
+ const capText=a.dexCap===null?"No DEX cap":a.dexCap===0?"DEX modifier not added":`DEX bonus capped at +${a.dexCap}`;
+ $("armorDetails").innerHTML=`<b>${a.dnd} equivalent</b> · <b>AC:</b> ${acText} · <b>${capText}</b> · <b>Stealth:</b> ${a.stealth} · <b>Strength:</b> ${a.strength} · <b>Cost:</b> ${a.cost}<br>${a.description}`;
+}
+function calculateArmorClass(){
+ const armor=armorRules[$("armor").value]||armorRules.none;
+ const dex=score("DEX");
+ const dexMod=dex===null?null:modifier(dex);
+ if(dexMod===null){$("personalAC").value="";$("personalAC").placeholder="Assign DEX to calculate";return}
+ const appliedDex=armor.dexCap===null?dexMod:(armor.dexCap===0?0:Math.min(dexMod,armor.dexCap));
+ $("personalAC").value=armor.base+appliedDex+Number($("shield").value||0);
+}
+const commanderXpThresholds=[0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
+function getCommanderLevel(xp){
+ let level=1;
+ for(let i=0;i<commanderXpThresholds.length;i++){if(xp>=commanderXpThresholds[i])level=i+1;else break;}
+ return level;
+}
+function calculateCommanderProgression(){
+ const xp=Math.max(0,Math.floor(Number($("experience").value)||0));
+ const level=getCommanderLevel(xp);
+ $("level").value=level;
+ if($("proficiencyBonusDisplay"))$("proficiencyBonusDisplay").value="+"+proficiencyBonus(level);
+ if($("featGrid"))renderFeats();
+ const con=score("CON");
+ if(con===null){
+  $("commanderHP").value="";
+  $("hpDetails").textContent="Assign Constitution to calculate commander HP.";
+ }else{
+  const conMod=modifier(con);
+  const hp=20+conMod+Math.max(0,level-1)*(5+conMod);
+  $("commanderHP").value=Math.max(1,hp);
+  $("hpDetails").textContent=`Universal d8 Hit Die · Level 1: 20 ${conMod>=0?"+": "−"} ${Math.abs(conMod)} CON modifier; each later level: 5 ${conMod>=0?"+": "−"} ${Math.abs(conMod)} CON modifier. Current maximum HP: ${Math.max(1,hp)}.`;
+ }
+ const nextThreshold=level<20?commanderXpThresholds[level]:null;
+ const remaining=nextThreshold===null?0:Math.max(0,nextThreshold-xp);
+ $("progressionDetails").textContent=level===20
+  ? `Level 20 · ${xp.toLocaleString()} XP · Maximum level reached.`
+  : `Level ${level} · ${xp.toLocaleString()} XP · ${remaining.toLocaleString()} XP until Level ${level+1} (${nextThreshold.toLocaleString()} total XP).`;
+}
+function updatePreview(){
+ const name=$("name").value.trim()||"Unnamed Commander";
+ const sp=selectedSpecies()||"Species not selected";
+ const faction=$("faction").value||"No affiliation";
+ const marineDivision=$("marineDivision").value;
+ const birthplace=$("birthplace").value||"Birthplace not selected";
+ const background=$("background").value||"Background not selected";
+ calculateArmorClass();
+ calculateCommanderProgression();
+ updateArmorDetails();
+ $("pName").textContent=name;
+ $("pMeta").textContent=[sp,birthplace,background,faction,marineDivision].filter(Boolean).join(" · ");
+ updateSpeciesBuff();
+ const statLines=abilities.map(a=>{const v=score(a);const m=modifier(v);$("mod-"+a).textContent="Modifier: "+(m===null?"—":m>=0?"+"+m:m);return `${a}: ${v===null?"—":v} (${m===null?"—":m>=0?"+"+m:m})`});
+ $("pStats").innerHTML=statLines.map(x=>`<div class="preview-line">${x}</div>`).join("");
+ $("pSpecs").innerHTML=selectedSpecs.length?selectedSpecs.map(i=>`<div class="buff">${specs[i].name}</div>`).join(""):'<span class="preview-empty">Choose two specializations</span>';
+ const ac=$("personalAC").value||"—",hp=$("commanderHP").value||"—";
+ $("pCombat").textContent=`AC ${ac} · HP ${hp}`;
+}
+let selectedArmyType="";
+const catenarianForceBuffs={
+ Regular:{
+  name:"Regular Infantry Doctrine",
+  effects:[
+   {target:"Regular infantry formations",stat:"attack rolls",bonus:2},
+   {target:"Regular infantry formations",stat:"damage rolls",bonus:2}
+  ]
+ },
+ Armored:{
+  name:"Armored Warfare Doctrine",
+  effects:[
+   {target:"Armored formations",stat:"AC",bonus:2},
+   {target:"Armored formations",stat:"damage rolls",bonus:3}
+  ]
+ },
+ Mechanized:{
+  name:"Combined Arms Doctrine",
+  effects:[
+   {target:"Regular infantry and armored formations",stat:"AC",bonus:1},
+   {target:"Regular infantry and armored formations",stat:"attack rolls",bonus:2}
+  ]
+ }
+};
+function getArmyData(){
+ const selectedBuff=catenarianForceBuffs[selectedArmyType]||null;
+ return {
+  codex:"Catenarian Legion",
+  affiliation:$("faction").value,
+  marineDivision:$("marineDivision").value,
+  forceType:selectedArmyType,
+  forceTypeBuff:selectedBuff,
+  availableForceTypes:["Regular","Armored","Mechanized"],
+  unitStatSheets:"Each force type uses its own unit stat sheets.",
+  valid:!!selectedBuff
+ };
+}
+function renderArmyTypeSelection(){
+ document.querySelectorAll(".army-force-card").forEach(card=>{
+  const selected=card.dataset.armyType===selectedArmyType;
+  card.classList.toggle("selected",selected);
+  card.setAttribute("aria-pressed",selected?"true":"false");
+ });
+ const notice=$("armySelectionNotice");
+ if(!notice)return;
+ if(!selectedArmyType){
+  notice.textContent="Choose Regular, Armored, or Mechanized. The corresponding unit stat sheets will be used for building the battalion.";
+ }else if(selectedArmyType==="Mechanized"){
+  notice.textContent="Mechanized selected: your force will draw from both the Catenarian regular infantry and armored unit stat sheets.";
+ }else{
+  notice.textContent=`${selectedArmyType} selected. Your force will use the Catenarian ${selectedArmyType.toLowerCase()} unit stat sheets.`;
+ }
+}
+function initializeArmyBuilder(){
+ const isCatenarian=($("faction").value||"").includes("Catenarian Legion");
+ $("armyCodexNotice").innerHTML=isCatenarian
+  ? "<b>Catenarian Legion Army Codex</b><br>This army builder is for the Catenarian Legion. Choose Regular, Armored, or Mechanized. Each force type will have its own unit stat sheets."
+  : `<b>Army roster not yet available</b><br>The ${escapeHtml($("faction").value||"selected military affiliation")} Army Codex has not been configured in this prototype.`;
+ if(!isCatenarian){
+  $("armySelectionNotice").textContent="Army customization for this military affiliation will be added when its Army Codex is developed.";
+ }else{
+  renderArmyTypeSelection();
+ }
+}
+function validateArmy(){
+ if(!($("faction").value||"").includes("Catenarian Legion")){
+  toast("The selected military affiliation does not have an Army Codex configured yet.");
+  return false;
+ }
+ if(!["Regular","Armored","Mechanized"].includes(selectedArmyType)){
+  toast("Choose a Catenarian force type before continuing.");
+  return false;
+ }
+ return true;
+}
+function data(){
+ const abilityGeneration={method:method==="standard"?"Standard Array":"4d6 drop lowest",rolledScores:method==="roll"?rolledScores:[]};
+ return {
+  game:"Astrovia: Tactical Warfare",creatorVersion:"prototype-1",
+  rulesFoundation:"D&D 5e (2014), adapted for Astrovia commander rules",
+  abilityGeneration,
+  identity:{name:$("name").value.trim(),callsign:$("callsign").value.trim(),gender:$("gender").value,age:$("age").value,birthplace:$("birthplace").value,background:$("background").value,backgroundBonus:backgroundRules[$("background").value]||null,faction:$("faction").value,marineDivision:$("marineDivision").value,description:$("description").value,portrait:portraitData||null},
+  species:selectedSpecies(),
+  speciesBuff:selectedSpeciesBuff(),
+  abilityScores:Object.fromEntries(abilities.map(a=>[a,score(a)])),
+  specializations:selectedSpecs.map(i=>({name:specs[i].name,buff:specs[i].buff})),
+  personalCombat:{armor:$("armor").selectedOptions[0]?.textContent||$("armor").value,armorKey:$("armor").value,shield:Number($("shield").value||0)>0,AC:$("personalAC").value?Number($("personalAC").value):null,primaryWeapon:weaponCatalogue.find(w=>w.id===$("weapon").value)?.name||"",primaryWeaponDetails:weaponCatalogue.find(w=>w.id===$("weapon").value)||null,secondaryWeapon:weaponCatalogue.find(w=>w.id===$("secondary").value)?.name||"",secondaryWeaponDetails:weaponCatalogue.find(w=>w.id===$("secondary").value)||null,HP:$("commanderHP").value?Number($("commanderHP").value):null,additionalEquipment:$("gear").value},
+  progression:{level:Number($("level").value||1),experience:Number($("experience").value||0),proficiencyBonus:proficiencyBonus(Number($("level").value||1)),xpThresholds:commanderXpThresholds,hitDie:"d8",hpMethod:"Level 1: 20 + CON modifier; each additional level: 5 + CON modifier (fixed average)"},
+  economy:{startingCredits,creditsSpent:creditsSpent(),creditsRemaining:creditsRemaining(),purchasedFeats:featCatalogue.filter(f=>purchasedFeats.includes(f.id)).map(f=>({name:f.name,cost:f.cost,description:f.description}))},
+  feats:featCatalogue.filter(f=>purchasedFeats.includes(f.id)),
+  army:getArmyData()
+ };
+}
+function toast(msg){const t=$("toast");t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",2200)}
+function renderReview(){
+ const d=data();
+ const val=v=>(v===null||v===undefined||v===""?"—":escapeHtml(v));
+ const stats=abilities.map(a=>`<div class="review-item"><b>${a}:</b> ${val(d.abilityScores[a])} (${modifier(d.abilityScores[a])===null?"—":modifier(d.abilityScores[a])>=0?"+"+modifier(d.abilityScores[a]):modifier(d.abilityScores[a])})</div>`).join("");
+ const specRows=d.specializations.map(x=>`<div class="review-item"><b>${escapeHtml(x.name)}:</b> ${escapeHtml(x.buff)}</div>`).join("")||'<div class="review-item">No specializations selected</div>';
+ const armorText=$("armor").selectedOptions[0]?.textContent||"No armor selected";
+ const shieldText=$("shield").selectedOptions[0]?.textContent||"No shield selected";
+ const primary=d.personalCombat.primaryWeaponDetails;
+ const secondary=d.personalCombat.secondaryWeaponDetails;
+ const weaponRow=w=>w?`<div class="review-item"><b>${escapeHtml(w.name)}</b> — ${escapeHtml(w.damage)} ${escapeHtml(w.damageType||"")}<br>Equivalent: ${escapeHtml(w.base)} · ${escapeHtml(w.type)}<br>Cost: ${escapeHtml(w.cost)} · ${escapeHtml(w.properties)}</div>`:'<div class="review-item">Not selected</div>';
+ const con=score("CON"),conMod=con===null?null:modifier(con);
+ const xp=d.progression.experience,level=d.progression.level;
+ const next=level<20?commanderXpThresholds[level]:null;
+ const xpLine=level===20?`${xp.toLocaleString()} XP · Maximum level reached`:`${xp.toLocaleString()} XP · ${(next-xp).toLocaleString()} XP until Level ${level+1}`;
+ const identity=d.identity;
+ $("review").innerHTML=`
+ <div class="review-sheet">
+  <div class="review-header">
+   <h3>${val(identity.name||"Unnamed Commander")}</h3>
+   <p>${val(identity.callsign)}${identity.callsign?" · ":""}${val(d.species)} · ${val(identity.birthplace)} · ${val(identity.background)} · ${val(identity.faction)}${identity.marineDivision?" · "+val(identity.marineDivision):""} · Level ${level}</p>
+  </div>
+  <div class="review-grid">
+   <section class="review-section">
+    <h4>Identity</h4>
+    <div class="review-item"><b>Commander:</b> ${val(identity.name)}</div>
+    <div class="review-item"><b>Callsign / title:</b> ${val(identity.callsign)}</div>
+    <div class="review-item"><b>Gender:</b> ${val(identity.gender)}</div>
+    <div class="review-item"><b>Age:</b> ${val(identity.age)}</div>
+    <div class="review-item"><b>Planet of origin:</b> ${val(identity.birthplace)}</div>
+    <div class="review-item"><b>Background:</b> ${val(identity.background)}</div>
+    <div class="review-item"><b>Military branch / PDF:</b> ${val(identity.faction)}</div><div class="review-item"><b>Marine division:</b> ${val(identity.marineDivision)}</div>
+    <div class="review-item"><b>Species:</b> ${val(d.species)}</div>
+   </section>
+   <section class="review-section">
+    <h4>Background benefits</h4>
+    <div class="review-item"><b>Permanent army bonus:</b> ${val(identity.backgroundBonus?.permanent)}</div>
+    <div class="review-item"><b>${val(identity.backgroundBonus?.timing)} feature:</b> ${val(identity.backgroundBonus?.feature)}</div>
+   </section>
+   <section class="review-section">
+    <h4>Species bonuses</h4>
+    <div class="review-item"><b>Army receives:</b> ${val(d.speciesBuff?.army)}</div>
+    <div class="review-item"><b>Personal receives:</b> ${val(d.speciesBuff?.personal)}</div>
+   </section>
+   <section class="review-section">
+    <h4>Ability scores</h4>
+    <div class="review-item"><b>Generation:</b> ${val(d.abilityGeneration.method)}</div>
+    ${stats}
+   </section>
+   <section class="review-section">
+    <h4>Specializations · ${d.specializations.length} / 2</h4>
+    ${specRows}
+   </section>
+   <section class="review-section">
+    <h4>Commander progression</h4>
+    <div class="review-item"><b>Level:</b> ${level} / 20</div>
+    <div class="review-item"><b>Proficiency Bonus:</b> +${proficiencyBonus(level)}</div>
+    <div class="review-item"><b>Starting army treasury:</b> 10,000 Credits</div>
+    <div class="review-item"><b>Experience:</b> ${xpLine}</div>
+    <div class="review-item"><b>Hit Die:</b> d8</div>
+    <div class="review-item"><b>Constitution modifier:</b> ${conMod===null?"—":conMod>=0?"+"+conMod:conMod}</div>
+    <div class="review-item"><b>Maximum HP:</b> ${val(d.personalCombat.HP)}</div>
+    <div class="review-item">HP uses 8 + CON modifier at Level 1, then 5 + CON modifier per additional level.</div>
+   </section>
+   <section class="review-section">
+    <h4>Personal defense</h4>
+    <div class="review-item"><b>Armor:</b> ${val(armorText)}</div>
+    <div class="review-item"><b>Shield:</b> ${val(shieldText)}</div>
+    <div class="review-item"><b>Armor Class:</b> ${val(d.personalCombat.AC)}</div>
+   </section>
+   <section class="review-section">
+    <h4>Primary weapon</h4>
+    ${weaponRow(primary)}
+   </section>
+   <section class="review-section">
+    <h4>Secondary weapon</h4>
+    ${weaponRow(secondary)}
+   </section>
+   <section class="review-section review-full">
+    <h4>Physical description / biography</h4>
+    <div class="review-item">${val(identity.description)}</div>
+   </section>
+   <section class="review-section review-full">
+    <h4>Additional equipment</h4>
+    <div class="review-item">${val(d.personalCombat.additionalEquipment)}</div>
+   </section>
+  </div>
+ </div>`;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showStep(n){
+ step=n;if($("validationNotice")){$("validationNotice").textContent="";$("validationNotice").classList.add("hidden");}document.querySelectorAll(".page").forEach(p=>p.classList.toggle("hidden",Number(p.dataset.page)!==step));
+ document.querySelectorAll(".step").forEach(s=>{const i=Number(s.dataset.step);s.classList.toggle("active",i===step);s.classList.toggle("done",i<step)});
+ $("back").disabled=step===0;$("next").classList.toggle("hidden",step===6);$("save").classList.toggle("hidden",step!==6);
+ if(step===4)renderFeats();
+ if(step===5){initializeArmyBuilder();}
+ if(step===6)renderReview();
+}
+function validate(n){
+ const notice=$("validationNotice");
+ const fail=(message,targetId)=>{
+  notice.textContent=message;
+  notice.classList.remove("hidden");
+  if(targetId){
+   const target=$(targetId);
+   if(target){target.focus({preventScroll:true});target.scrollIntoView({behavior:"smooth",block:"center"});}
+  }
+  toast(message);
+  return false;
+ };
+ notice.textContent="";
+ notice.classList.add("hidden");
+ if(n===0){
+  if(!$("name").value.trim())return fail("Step 1 is incomplete: enter a commander name.","name");
+  if(!$("birthplace").value)return fail("Step 1 is incomplete: select the commander's planet of origin.","birthplace");
+  if(!$("background").value)return fail("Step 1 is incomplete: select a background.","background");
+  if(!$("faction").value)return fail("Step 1 is incomplete: select the available military branch or planetary PDF.","faction");
+  if($("faction").value==="APU Marines" && !$("marineDivision").value)return fail("Step 1 is incomplete: select an APU Marine division.","marineDivision");
+  if(!selectedSpecies())return fail("Step 1 is incomplete: choose the commander's race.","species-choice");
+ }
+ if(n===1){
+  if(abilities.some(a=>score(a)===null))return fail("Step 2 is incomplete: assign all six ability scores.","stats");
+  if(new Set(abilities.map(score)).size!==6)return fail("Step 2 is incomplete: each generated score must be assigned only once.","stats");
+  if(method==="roll"&&rolledScores.length!==6)return fail("Step 2 is incomplete: roll your six ability scores first.","rollScoresBtn");
+ }
+ if(n===2&&selectedSpecs.length!==2)return fail("Step 3 is incomplete: choose exactly two specializations.","specGrid");
+ return true;
+}
+$("back").addEventListener("click",()=>showStep(Math.max(0,step-1)));
+$("next").addEventListener("click",()=>{if(!validate(step))return;if(step===4&&!finalizeFeatSelections())return;if(step===5&&!validateArmy())return;showStep(Math.min(6,step+1))});
+$("save").addEventListener("click",()=>{
+ if(!validateArmy())return;
+ const d=data();localStorage.setItem("astroviaCommanderDraft",JSON.stringify(d));
+ const blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=(d.identity.name||"astrovia-commander").toLowerCase().replace(/[^a-z0-9]+/g,"-")+".json";a.click();URL.revokeObjectURL(url);
+ toast("Commander draft saved in this browser and JSON exported.");
+});
+function setScoreMethod(next){
+ method=next;
+ $("standardBtn").classList.toggle("active",method==="standard");
+ $("rollBtn").classList.toggle("active",method==="roll");
+ $("rollTools").classList.toggle("hidden",method!=="roll");
+ $("scoreNotice").textContent=method==="standard"
+  ?"Standard Array: assign 15, 14, 13, 12, 10 and 8 once each."
+  :"Rolling: roll 4d6 six times, discard the lowest die from each roll, then assign the six totals once each. You may roll a new set before assigning scores.";
+ renderStats();
+}
+$("standardBtn").addEventListener("click",()=>setScoreMethod("standard"));
+$("rollBtn").addEventListener("click",()=>setScoreMethod("roll"));
+$("rollScoresBtn").addEventListener("click",()=>{
+ rolledScores=Array.from({length:6},()=>{
+  const dice=Array.from({length:4},()=>Math.floor(Math.random()*6)+1).sort((a,b)=>a-b);
+  return dice.slice(1).reduce((sum,n)=>sum+n,0);
+ }).sort((a,b)=>b-a);
+ $("rollResults").textContent="Your six scores: "+rolledScores.join(", ")+". Assign each score once below. Roll again if you want a new set.";
+ renderStats();
+});
+$("portrait").addEventListener("change",e=>{
+ const f=e.target.files[0];if(!f)return;
+ if(!["image/png","image/jpeg","image/webp"].includes(f.type)){toast("Use PNG, JPG or WebP.");return}
+ const reader=new FileReader();reader.onload=()=>{portraitData=reader.result;$("avatar").innerHTML=`<img src="${portraitData}" alt="Commander portrait">`};reader.readAsDataURL(f);
+});
+["name"].forEach(id=>$(id).addEventListener("input",updatePreview));
+$("birthplace").addEventListener("change",()=>{updateOriginOptions();updateMarineDivisionOptions();});
+$("background").addEventListener("change",()=>updateBackgroundOptions());
+$("faction").addEventListener("change",()=>{updateMarineDivisionOptions();updatePreview();if(step===6)initializeArmyBuilder();});
+$("marineDivision").addEventListener("change",updatePreview);
+document.querySelectorAll(".army-force-card").forEach(card=>card.addEventListener("click",()=>{
+ selectedArmyType=card.dataset.armyType||"";
+ renderArmyTypeSelection();
+}));
+
+["weapon","secondary"].forEach(id=>$(id).addEventListener("change",updateWeaponDetails));
+["armor","shield"].forEach(id=>$(id).addEventListener("change",updatePreview));
+$("species-choice").addEventListener("change",()=>{
+ const isCustom=$("species-choice").value==="__custom__";
+ $("customSpeciesField").classList.toggle("hidden",!isCustom);
+ if(!isCustom)$("species-custom").value="";
+ renderRaceCards();
+ updatePreview();
+});
+$("species-custom").addEventListener("input",updatePreview);
+$("armor").addEventListener("change",updatePreview);
+$("shield").addEventListener("change",updatePreview);
+abilities.forEach(a=>{const el=$("score-"+a);if(el)el.addEventListener("change",updatePreview);});
+fillSpecies();renderStats();renderSpecs();populateWeaponSelectors();updateWeaponDetails();updatePreview();showStep(0);
+</script>
+</body>
+</html>
